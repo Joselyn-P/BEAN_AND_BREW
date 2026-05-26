@@ -6,6 +6,8 @@ import '../../core/constants/api_constants.dart';
 import '../../core/services/storage_service.dart';
 import '../../core/services/weather_service.dart';
 
+import 'widgets/weather_banner.dart';
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -163,16 +165,16 @@ class _HomePageState extends State<HomePage> {
                           height: 42,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
+                            color: const Color(0xFFE0D5C5),
                             border: Border.all(
-                              color: const Color(0xFFE0D5C5),
+                              color: const Color(0xFFD5C9B8),
                               width: 2,
                             ),
-                            image: const DecorationImage(
-                              image: NetworkImage(
-                                'https://i.pravatar.cc/150?img=8',
-                              ),
-                              fit: BoxFit.cover,
-                            ),
+                          ),
+                          child: const Icon(
+                            Icons.person,
+                            color: Color(0xFF7A6652),
+                            size: 24,
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -237,86 +239,7 @@ class _HomePageState extends State<HomePage> {
                               ),
                             ),
                           )
-                        : Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(20),
-                            decoration: BoxDecoration(
-                              color: _getBannerBgColor(),
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        _weatherData?['bannerText'] ?? '',
-                                        style: GoogleFonts.lato(
-                                          fontSize: 13,
-                                          color: const Color(0xFF7A6652),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 6),
-                                      Text(
-                                        "Today's Pick",
-                                        style: GoogleFonts.playfairDisplay(
-                                          fontSize: 22,
-                                          fontWeight: FontWeight.bold,
-                                          color: const Color(0xFF2C1A0E),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        _weatherData?['recommendationType'] ==
-                                                'hot'
-                                            ? 'Honey Lavender Latte'
-                                            : 'Iced Caramel Macchiato',
-                                        style: GoogleFonts.lato(
-                                          fontSize: 14,
-                                          color: const Color(0xFF7A6652),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 12),
-                                      ElevatedButton(
-                                        onPressed: () {},
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor:
-                                              const Color(0xFF2C1A0E),
-                                          foregroundColor: Colors.white,
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 20,
-                                            vertical: 10,
-                                          ),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(20),
-                                          ),
-                                          elevation: 0,
-                                        ),
-                                        child: Text(
-                                          'Order Now',
-                                          style: GoogleFonts.lato(
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Opacity(
-                                  opacity: 0.15,
-                                  child: const Icon(
-                                    Icons.coffee,
-                                    size: 80,
-                                    color: Color(0xFF2C1A0E),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+                        : WeatherBanner(weatherData: _weatherData!),
                   ),
                   const SizedBox(height: 20),
 
