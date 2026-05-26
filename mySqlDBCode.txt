@@ -1,0 +1,152 @@
+CREATE DATABASE IF NOT EXISTS bean_and_brew;
+USE bean_and_brew;
+
+CREATE TABLE users (
+  id CHAR(36) PRIMARY KEY DEFAULT (UUID()),
+  google_id VARCHAR(255) UNIQUE,
+  full_name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  password_hash VARCHAR(255),
+  profile_photo_url TEXT,
+  auth_provider ENUM('google','email') DEFAULT 'email',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE addresses (
+  id CHAR(36) PRIMARY KEY DEFAULT (UUID()),
+  user_id CHAR(36) NOT NULL,
+  label VARCHAR(50),
+  street VARCHAR(255),
+  city VARCHAR(100),
+  postal_code VARCHAR(20),
+  is_default BOOLEAN DEFAULT FALSE,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE payment_methods (
+  id CHAR(36) PRIMARY KEY DEFAULT (UUID()),
+  user_id CHAR(36) NOT NULL,
+  type VARCHAR(50),
+  provider VARCHAR(50),
+  last_four CHAR(4),
+  expiry VARCHAR(7),
+  is_default BOOLEAN DEFAULT FALSE,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE categories (
+  id CHAR(36) PRIMARY KEY DEFAULT (UUID()),
+  name VARCHAR(100) NOT NULL,
+  slug VARCHAR(100) UNIQUE NOT NULL,
+  icon_url TEXT,
+  display_order INT DEFAULT 0
+);
+
+CREATE TABLE products (
+  id CHAR(36) PRIMARY KEY DEFAULT (UUID()),
+  category_id CHAR(36),
+  name VARCHAR(255) NOT NULL,
+  description TEXT,
+  base_price DECIMAL(10,2) NOT NULL,
+  image_url TEXT,
+  temperature_type ENUM('hot','cold','both') DEFAULT 'both',
+  is_available BOOLEAN DEFAULT TRUE,
+  is_featured BOOLEAN DEFAULT FALSE,
+  FOREIGN KEY (category_id) REFERENCES categories(id)
+);
+
+CREATE TABLE product_options (
+  id CHAR(36) PRIMARY KEY DEFAULT (UUID()),
+  product_id CHAR(36) NOT NULL,
+  option_type ENUM('size','temperature','sugar','addon') NOT NULL,
+  label VARCHAR(100) NOT NULL,
+  price_modifier DECIMAL(10,2) DEFAULT 0.00,
+  FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+);
+
+CREATE TABLE favorites (
+  id CHAR(36) PRIMARY KEY DEFAULT (UUID()),
+  user_id CHAR(36) NOT NULL,
+  product_id CHAR(36) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY unique_fav (user_id, product_id),
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+);
+
+CREATE TABLE carts (
+  id CHAR(36) PRIMARY KEY DEFAULT (UUID()),
+  user_id CHAR(36) UNIQUE NOT NULL,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE cart_items (
+  id CHAR(36) PRIMARY KEY DEFAULT (UUID()),
+  cart_id CHAR(36) NOT NULL,
+  product_id CHAR(36) NOT NULL,
+  quantity INT DEFAULT 1,
+  selected_options JSON,
+  item_price DECIMAL(10,2),
+  FOREIGN KEY (cart_id) REFERENCES carts(id) ON DELETE CASCADE,
+  FOREIGN KEY (product_id) REFERENCES products(id)
+);
+
+CREATE TABLE promo_codes (
+  id CHAR(36) PRIMARY KEY DEFAULT (UUID()),
+  code VARCHAR(50) UNIQUE NOT NULL,
+  discount_type ENUM('percent','fixed') NOT NULL,
+  discount_value DECIMAL(10,2) NOT NULL,
+  max_uses INT,
+  used_count INT DEFAULT 0,
+  expires_at TIMESTAMP
+);
+
+CREATE TABLE orders (
+  id CHAR(36) PRIMARY KEY DEFAULT (UUID()),
+  user_id CHAR(36) NOT NULL,
+  address_id CHAR(36),
+  promo_code_id CHAR(36),
+  fulfillment_type ENUM('pickup','delivery') DEFAULT 'pickup',
+  status ENUM('confirmed','preparing','ready','delivered','cancelled') DEFAULT 'confirmed',
+  subtotal DECIMAL(10,2),
+  tax DECIMAL(10,2),
+  delivery_fee DECIMAL(10,2) DEFAULT 0.00,
+  total DECIMAL(10,2),
+  payment_method VARCHAR(50),
+  placed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id),
+  FOREIGN KEY (address_id) REFERENCES addresses(id),
+  FOREIGN KEY (promo_code_id) REFERENCES promo_codes(id)
+);
+
+CREATE TABLE order_items (
+  id CHAR(36) PRIMARY KEY DEFAULT (UUID()),
+  order_id CHAR(36) NOT NULL,
+  product_id CHAR(36) NOT NULL,
+  quantity INT DEFAULT 1,
+  selected_options JSON,
+  item_price DECIMAL(10,2),
+  FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+  FOREIGN KEY (product_id) REFERENCES products(id)
+);
+
+CREATE TABLE order_tracking (
+  id CHAR(36) PRIMARY KEY DEFAULT (UUID()),
+  order_id CHAR(36) NOT NULL,
+  status VARCHAR(50) NOT NULL,
+  note TEXT,
+  timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
+);
+
+CREATE TABLE weather_recommendations (
+  id CHAR(36) PRIMARY KEY DEFAULT (UUID()),
+  weather_condition VARCHAR(50) NOT NULL,
+  temperature_range VARCHAR(50),
+  product_id CHAR(36) NOT NULL,
+  priority INT DEFAULT 1,
+  FOREIGN KEY (product_id) REFERENCES products(id)
+);

@@ -45,14 +45,13 @@ dependencies:
   # secure local storage (for JWT token)
   flutter_secure_storage: ^9.0.0
 
-  # device location (for weather)
-  geolocator: ^11.0.0
-
   # image loading
   cached_network_image: ^3.3.1
 
   # loading animation
   shimmer: ^3.0.0
+
+  flutter_svg: ^2.0.10+1
 
 dev_dependencies:
   flutter_test:
