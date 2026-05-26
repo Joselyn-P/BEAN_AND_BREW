@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/services/auth_service.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
@@ -116,10 +117,10 @@ class _SignupPageState extends State<SignupPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Center(
+                  Center(
                     child: Text(
                       'Bean & Brew',
-                      style: TextStyle(
+                      style: GoogleFonts.playfairDisplay(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF2C1A0E),

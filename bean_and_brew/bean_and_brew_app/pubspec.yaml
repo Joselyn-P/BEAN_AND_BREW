@@ -51,7 +51,11 @@ dependencies:
   # loading animation
   shimmer: ^3.0.0
 
+  # Vector Images
   flutter_svg: ^2.0.10+1
+
+  # Fonts
+  google_fonts: ^6.2.1
 
 dev_dependencies:
   flutter_test:

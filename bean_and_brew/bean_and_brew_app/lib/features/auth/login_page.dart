@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../core/services/auth_service.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import 'signup_page.dart';
+import '../home/home_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -41,9 +43,9 @@ class _LoginPageState extends State<LoginPage> {
     setState(() => _isLoading = false);
 
     if (result['success']) {
-      // TODO: navigate to home page
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Welcome back, ${result['user']['full_name']}!')),
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const HomePage()),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -102,10 +104,10 @@ class _LoginPageState extends State<LoginPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Center(
+                  Center(
                     child: Text(
                       'Bean & Brew',
-                      style: TextStyle(
+                      style: GoogleFonts.playfairDisplay(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF2C1A0E),
