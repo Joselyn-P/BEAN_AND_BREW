@@ -1,0 +1,143 @@
+PUSH 1
+USE bean_and_brew;
+
+-- Categories
+INSERT INTO categories (id, name, slug, display_order) VALUES
+(UUID(), 'Hot Coffee', 'hot-coffee', 1),
+(UUID(), 'Cold Brew', 'cold-brew', 2),
+(UUID(), 'Tea', 'tea', 3),
+(UUID(), 'Pastries', 'pastries', 4);
+
+-- Products
+INSERT INTO products (id, category_id, name, description, base_price, image_url, temperature_type, is_available, is_featured)
+SELECT UUID(), c.id, 'Artisan Latte', 'Rich espresso with steamed milk', 4.50,
+'https://images.unsplash.com/photo-1593443320739-77f74939d0da?w=400',
+'hot', 1, 0 FROM categories c WHERE c.slug = 'hot-coffee';
+
+INSERT INTO products (id, category_id, name, description, base_price, image_url, temperature_type, is_available, is_featured)
+SELECT UUID(), c.id, 'Flat White', 'Smooth espresso with velvety milk', 4.25,
+'https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?w=400',
+'hot', 1, 0 FROM categories c WHERE c.slug = 'hot-coffee';
+
+INSERT INTO products (id, category_id, name, description, base_price, image_url, temperature_type, is_available, is_featured)
+SELECT UUID(), c.id, 'Oat Milk Latte', 'Espresso with creamy oat milk', 5.50,
+'https://images.unsplash.com/photo-1561047029-3000c68339ca?w=400',
+'cold', 1, 0 FROM categories c WHERE c.slug = 'cold-brew';
+
+INSERT INTO products (id, category_id, name, description, base_price, image_url, temperature_type, is_available, is_featured)
+SELECT UUID(), c.id, 'Cold Brew', 'Slow steeped for 12 hours', 5.00,
+'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=400',
+'cold', 1, 0 FROM categories c WHERE c.slug = 'cold-brew';
+
+INSERT INTO products (id, category_id, name, description, base_price, image_url, temperature_type, is_available, is_featured)
+SELECT UUID(), c.id, 'Almond Croissant', 'Twice-baked with almond cream and topped with toasted almonds.', 4.25,
+'https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=400',
+'both', 1, 1 FROM categories c WHERE c.slug = 'pastries';
+
+INSERT INTO products (id, category_id, name, description, base_price, image_url, temperature_type, is_available, is_featured)
+SELECT UUID(), c.id, 'Ceremonial Matcha', 'Premium grade matcha whisked with your choice of milk.', 6.00,
+'https://images.unsplash.com/photo-1536256263959-770b48d82b0a?w=400',
+'cold', 1, 1 FROM categories c WHERE c.slug = 'tea';
+
+
+
+
+
+
+
+
+
+PUSH 2
+USE bean_and_brew;
+
+-- HOT COFFEE
+INSERT INTO products (id, category_id, name, description, base_price, image_url, temperature_type, is_available, is_featured)
+SELECT UUID(), c.id, 'Cappuccino', 'Equal parts espresso, steamed milk, and thick foam.', 4.75,
+'https://images.unsplash.com/photo-1534778101976-62847782c213?w=400',
+'hot', 1, 0 FROM categories c WHERE c.slug = 'hot-coffee'
+AND NOT EXISTS (SELECT 1 FROM products WHERE name = 'Cappuccino');
+
+INSERT INTO products (id, category_id, name, description, base_price, image_url, temperature_type, is_available, is_featured)
+SELECT UUID(), c.id, 'Americano', 'Bold espresso diluted with hot water for a clean finish.', 3.50,
+'https://images.unsplash.com/photo-1551030173-122aabc4489c?w=400',
+'hot', 1, 0 FROM categories c WHERE c.slug = 'hot-coffee'
+AND NOT EXISTS (SELECT 1 FROM products WHERE name = 'Americano');
+
+INSERT INTO products (id, category_id, name, description, base_price, image_url, temperature_type, is_available, is_featured)
+SELECT UUID(), c.id, 'Honey Lavender Latte', 'Espresso with lavender syrup, honey, and oat milk.', 6.00,
+'https://images.unsplash.com/photo-1496318447583-f524534e9ce1?w=400',
+'hot', 1, 1 FROM categories c WHERE c.slug = 'hot-coffee'
+AND NOT EXISTS (SELECT 1 FROM products WHERE name = 'Honey Lavender Latte');
+
+INSERT INTO products (id, category_id, name, description, base_price, image_url, temperature_type, is_available, is_featured)
+SELECT UUID(), c.id, 'Caramel Macchiato', 'Vanilla-flavored drink marked with espresso and caramel drizzle.', 5.50,
+'https://images.unsplash.com/photo-1578314675249-a6910f80cc4e?w=400',
+'hot', 1, 0 FROM categories c WHERE c.slug = 'hot-coffee'
+AND NOT EXISTS (SELECT 1 FROM products WHERE name = 'Caramel Macchiato');
+
+-- COLD BREW
+INSERT INTO products (id, category_id, name, description, base_price, image_url, temperature_type, is_available, is_featured)
+SELECT UUID(), c.id, 'Iced Caramel Macchiato', 'Layered espresso, milk, and caramel over ice.', 5.75,
+'https://images.unsplash.com/photo-1517959105821-eaf2591984d2?w=400',
+'cold', 1, 1 FROM categories c WHERE c.slug = 'cold-brew'
+AND NOT EXISTS (SELECT 1 FROM products WHERE name = 'Iced Caramel Macchiato');
+
+INSERT INTO products (id, category_id, name, description, base_price, image_url, temperature_type, is_available, is_featured)
+SELECT UUID(), c.id, 'Nitro Cold Brew', 'Cold brew infused with nitrogen for a creamy, velvety texture.', 6.50,
+'https://images.unsplash.com/photo-1517701604599-bb29b565090b?w=400',
+'cold', 1, 0 FROM categories c WHERE c.slug = 'cold-brew'
+AND NOT EXISTS (SELECT 1 FROM products WHERE name = 'Nitro Cold Brew');
+
+INSERT INTO products (id, category_id, name, description, base_price, image_url, temperature_type, is_available, is_featured)
+SELECT UUID(), c.id, 'Iced Americano', 'Bold espresso shots over ice with a splash of cold water.', 4.00,
+'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=400',
+'cold', 1, 0 FROM categories c WHERE c.slug = 'cold-brew'
+AND NOT EXISTS (SELECT 1 FROM products WHERE name = 'Iced Americano');
+
+-- TEA
+INSERT INTO products (id, category_id, name, description, base_price, image_url, temperature_type, is_available, is_featured)
+SELECT UUID(), c.id, 'Chamomile Honey Tea', 'Soothing chamomile blended with a touch of natural honey.', 4.00,
+'https://images.unsplash.com/photo-1597481499750-3e6b22637536?w=400',
+'hot', 1, 0 FROM categories c WHERE c.slug = 'tea'
+AND NOT EXISTS (SELECT 1 FROM products WHERE name = 'Chamomile Honey Tea');
+
+INSERT INTO products (id, category_id, name, description, base_price, image_url, temperature_type, is_available, is_featured)
+SELECT UUID(), c.id, 'Iced Matcha Latte', 'Ceremonial matcha shaken with milk poured over ice.', 5.50,
+'https://images.unsplash.com/photo-1571934811356-5cc061b6821f?w=400',
+'cold', 1, 0 FROM categories c WHERE c.slug = 'tea'
+AND NOT EXISTS (SELECT 1 FROM products WHERE name = 'Iced Matcha Latte');
+
+INSERT INTO products (id, category_id, name, description, base_price, image_url, temperature_type, is_available, is_featured)
+SELECT UUID(), c.id, 'Earl Grey Latte', 'Fragrant Earl Grey tea with steamed milk and vanilla.', 4.75,
+'https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=400',
+'hot', 1, 0 FROM categories c WHERE c.slug = 'tea'
+AND NOT EXISTS (SELECT 1 FROM products WHERE name = 'Earl Grey Latte');
+
+-- PASTRIES
+INSERT INTO products (id, category_id, name, description, base_price, image_url, temperature_type, is_available, is_featured)
+SELECT UUID(), c.id, 'Butter Croissant', 'Classic flaky croissant with a golden buttery crust.', 3.50,
+'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400',
+'both', 1, 0 FROM categories c WHERE c.slug = 'pastries'
+AND NOT EXISTS (SELECT 1 FROM products WHERE name = 'Butter Croissant');
+
+INSERT INTO products (id, category_id, name, description, base_price, image_url, temperature_type, is_available, is_featured)
+SELECT UUID(), c.id, 'Blueberry Muffin', 'Fluffy muffin bursting with fresh blueberries.', 3.75,
+'https://images.unsplash.com/photo-1607958996333-41aef7caefaa?w=400',
+'both', 1, 1 FROM categories c WHERE c.slug = 'pastries'
+AND NOT EXISTS (SELECT 1 FROM products WHERE name = 'Blueberry Muffin');
+
+INSERT INTO products (id, category_id, name, description, base_price, image_url, temperature_type, is_available, is_featured)
+SELECT UUID(), c.id, 'Cinnamon Roll', 'Soft, gooey cinnamon roll drizzled with cream cheese frosting.', 4.50,
+'https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?w=400',
+'both', 1, 1 FROM categories c WHERE c.slug = 'pastries'
+AND NOT EXISTS (SELECT 1 FROM products WHERE name = 'Cinnamon Roll');
+
+INSERT INTO products (id, category_id, name, description, base_price, image_url, temperature_type, is_available, is_featured)
+SELECT UUID(), c.id, 'Banana Bread', 'Moist homemade banana bread with a hint of cinnamon.', 3.75,
+'https://images.unsplash.com/photo-1481391319762-47dff72954d9?w=400',
+'both', 1, 0 FROM categories c WHERE c.slug = 'pastries'
+AND NOT EXISTS (SELECT 1 FROM products WHERE name = 'Banana Bread');
+
+-- Update existing products to set is_featured correctly
+UPDATE products SET is_featured = 1 WHERE name IN ('Flat White', 'Honey Lavender Latte', 'Oat Milk Latte', 'Iced Caramel Macchiato', 'Ceremonial Matcha', 'Almond Croissant', 'Blueberry Muffin', 'Cinnamon Roll');
+UPDATE products SET is_featured = 0 WHERE name IN ('Artisan Latte', 'Cappuccino', 'Americano', 'Caramel Macchiato', 'Cold Brew', 'Nitro Cold Brew', 'Iced Americano', 'Chamomile Honey Tea', 'Iced Matcha Latte', 'Earl Grey Latte', 'Butter Croissant', 'Banana Bread');

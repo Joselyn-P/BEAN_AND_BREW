@@ -20,8 +20,9 @@ class _HomePageState extends State<HomePage> {
   Map<String, dynamic>? _weatherData;
   bool _weatherLoading = true;
   bool _productsLoading = true;
-  int _selectedCategory = 0;
+  int _selectedCategory = -1;
   int _currentNavIndex = 0;
+  String _userName = 'Guest';
 
   final List<String> _categories = [
     'HOT COFFEE', 'COLD BREW', 'TEA', 'PASTRIES'
@@ -37,8 +38,19 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    _loadUser();
     _loadWeather();
     _loadProducts();
+  }
+
+  Future<void> _loadUser() async {
+    final userJson = await StorageService.getUser();
+    if (userJson != null) {
+      final user = json.decode(userJson);
+      setState(() {
+        _userName = user['full_name'] ?? 'Guest';
+      });
+    }
   }
 
   Future<void> _loadWeather() async {
@@ -47,12 +59,12 @@ class _HomePageState extends State<HomePage> {
       setState(() {
         _weatherData = data;
         _weatherLoading = false;
-
+        // If weather returned products, use them for recommended
         if (data['products'] != null &&
             (data['products'] as List).isNotEmpty) {
-              _recommended = List<Map<String, dynamic>>.from(data['products']);
-              _productsLoading = false;
-            }
+          _recommended = List<Map<String, dynamic>>.from(data['products']);
+          _productsLoading = false;
+        }
       });
     } catch (e) {
       setState(() {
@@ -61,7 +73,7 @@ class _HomePageState extends State<HomePage> {
           'temp': 28,
           'city': 'Your City',
           'recommendationType': 'cold',
-          'bannerText': "It's a sunny day! ☀️",
+          'bannerText': "It's a sunny day!",
           'bannerColor': 'orange',
         };
         _weatherLoading = false;
@@ -87,18 +99,22 @@ class _HomePageState extends State<HomePage> {
         headers: headers,
       );
 
-      if (featuredRes.statusCode == 200 && recommendedRes.statusCode == 200) {
+      if (featuredRes.statusCode == 200) {
         setState(() {
           _featured = List<Map<String, dynamic>>.from(
             json.decode(featuredRes.body),
           );
+        });
+      }
+
+      // Only update recommended if weather didn't already set it
+      if (recommendedRes.statusCode == 200 && _recommended.isEmpty) {
+        setState(() {
           _recommended = List<Map<String, dynamic>>.from(
             json.decode(recommendedRes.body),
-          ).take(5).toList();
+          );
           _productsLoading = false;
         });
-      } else {
-        setState(() => _productsLoading = false);
       }
     } catch (e) {
       setState(() => _productsLoading = false);
@@ -110,7 +126,7 @@ class _HomePageState extends State<HomePage> {
     try {
       final token = await StorageService.getToken();
       final res = await http.get(
-        Uri.parse('${ApiConstants.products}/category/$slug'),
+        Uri.parse('${ApiConstants.products}?category=$slug'),
         headers: {
           'Content-Type': 'application/json',
           if (token != null) 'Authorization': 'Bearer $token',
@@ -120,26 +136,12 @@ class _HomePageState extends State<HomePage> {
         setState(() {
           _recommended = List<Map<String, dynamic>>.from(
             json.decode(res.body),
-          ).take(5).toList();
+          );
           _productsLoading = false;
         });
       }
     } catch (e) {
       setState(() => _productsLoading = false);
-    }
-  }
-
-  Color _getBannerBgColor() {
-    final color = _weatherData?['bannerColor'] ?? 'orange';
-    switch (color) {
-      case 'blue':
-        return const Color(0xFFDDE8F5);
-      case 'lightblue':
-        return const Color(0xFFE0F0FF);
-      case 'grey':
-        return const Color(0xFFEEEEEE);
-      default:
-        return const Color(0xFFFFF0D6);
     }
   }
 
@@ -151,7 +153,7 @@ class _HomePageState extends State<HomePage> {
         child: Stack(
           children: [
             SingleChildScrollView(
-              padding: const EdgeInsets.only(bottom: 100),
+              padding: const EdgeInsets.only(bottom: 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -160,6 +162,7 @@ class _HomePageState extends State<HomePage> {
                     padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
                     child: Row(
                       children: [
+                        // Profile pic
                         Container(
                           width: 42,
                           height: 42,
@@ -178,6 +181,8 @@ class _HomePageState extends State<HomePage> {
                           ),
                         ),
                         const SizedBox(width: 12),
+
+                        // Welcome + username
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -189,34 +194,48 @@ class _HomePageState extends State<HomePage> {
                                   color: Colors.grey[600],
                                 ),
                               ),
-                              Row(
-                                children: [
-                                  Text(
-                                    _weatherData?['city'] ?? 'Loading...',
-                                    style: GoogleFonts.lato(
-                                      fontSize: 12,
-                                      color: const Color(0xFF7A6652),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    'Bean & Brew',
-                                    style: GoogleFonts.playfairDisplay(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: const Color(0xFF2C1A0E),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 4),
-                                  const Icon(
-                                    Icons.location_on,
-                                    size: 16,
-                                    color: Color(0xFF2C1A0E),
-                                  ),
-                                ],
+                              Text(
+                                _userName,
+                                style: GoogleFonts.playfairDisplay(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: const Color(0xFF2C1A0E),
+                                ),
                               ),
                             ],
                           ),
+                        ),
+
+                        // Bean & Brew logo on the right
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(
+                              'Bean & Brew',
+                              style: GoogleFonts.playfairDisplay(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFF2C1A0E),
+                              ),
+                            ),
+                            Row(
+                              children: [
+                                Text(
+                                  _weatherData?['city'] ?? '',
+                                  style: GoogleFonts.lato(
+                                    fontSize: 11,
+                                    color: const Color(0xFF7A6652),
+                                  ),
+                                ),
+                                const SizedBox(width: 2),
+                                const Icon(
+                                  Icons.location_on,
+                                  size: 12,
+                                  color: Color(0xFF7A6652),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -243,26 +262,38 @@ class _HomePageState extends State<HomePage> {
                   ),
                   const SizedBox(height: 20),
 
-                  // ── Category Tabs ────────────────────────
-                  SizedBox(
-                    height: 38,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      itemCount: _categories.length,
-                      itemBuilder: (context, index) {
-                        final selected = _selectedCategory == index;
+                // ── Recommended ──────────────────────────────
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
+                  child: Text(
+                    'Recommended',
+                    style: GoogleFonts.playfairDisplay(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF2C1A0E),
+                    ),
+                  ),
+                ),
+
+                // ── Category Tabs ────────────────────────────
+                SizedBox(
+                  height: 38,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    itemCount: _categories.length + 1,
+                    itemBuilder: (context, index) {
+                      if (index == 0) {
+                        final selected = _selectedCategory == -1;
                         return GestureDetector(
                           onTap: () {
-                            setState(() => _selectedCategory = index);
-                            _loadByCategory(_categorySlugs[index]);
+                            setState(() => _selectedCategory = -1);
+                            _loadProducts();
                           },
                           child: Container(
                             margin: const EdgeInsets.only(right: 10),
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 8,
-                            ),
+                                horizontal: 16, vertical: 8),
                             decoration: BoxDecoration(
                               color: selected
                                   ? const Color(0xFF2C1A0E)
@@ -275,7 +306,7 @@ class _HomePageState extends State<HomePage> {
                               ),
                             ),
                             child: Text(
-                              _categories[index],
+                              'VIEW ALL',
                               style: GoogleFonts.lato(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
@@ -286,39 +317,46 @@ class _HomePageState extends State<HomePage> {
                             ),
                           ),
                         );
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 24),
+                      }
 
-                  // ── Recommended (Carousel) ───────────────
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Recommended',
-                          style: GoogleFonts.playfairDisplay(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: const Color(0xFF2C1A0E),
+                      final catIndex = index - 1;
+                      final selected = _selectedCategory == catIndex;
+                      return GestureDetector(
+                        onTap: () {
+                          setState(() => _selectedCategory = catIndex);
+                          _loadByCategory(_categorySlugs[catIndex]);
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.only(right: 10),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: selected
+                                ? const Color(0xFF2C1A0E)
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: selected
+                                  ? const Color(0xFF2C1A0E)
+                                  : const Color(0xFFD5C9B8),
+                            ),
                           ),
-                        ),
-                        TextButton(
-                          onPressed: () {},
                           child: Text(
-                            'View All',
+                            _categories[catIndex],
                             style: GoogleFonts.lato(
-                              color: const Color(0xFFB87333),
-                              fontWeight: FontWeight.w500,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: selected
+                                  ? Colors.white
+                                  : const Color(0xFF7A6652),
                             ),
                           ),
                         ),
-                      ],
-                    ),
+                      );
+                    },
                   ),
-                  const SizedBox(height: 8),
+                ),
+                const SizedBox(height: 12),
                   SizedBox(
                     height: 220,
                     child: _productsLoading
@@ -566,7 +604,7 @@ class _HomePageState extends State<HomePage> {
                             );
                           },
                         ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 8),
                 ],
               ),
             ),

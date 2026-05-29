@@ -4,20 +4,34 @@ const pool = require('../config/db');
 exports.getAllProducts = async (req, res) => {
   try {
     const { category } = req.query;
-    let query = `
-      SELECT p.*, c.name as category_name, c.slug as category_slug
-      FROM products p
-      LEFT JOIN categories c ON p.category_id = c.id
-      WHERE p.is_available = 1
-    `;
+    let query;
     const params = [];
 
     if (category) {
-      query += ' AND c.slug = ?';
+      // If category specified, return all in that category
+      query = `
+        SELECT p.*, c.name as category_name, c.slug as category_slug
+        FROM products p
+        LEFT JOIN categories c ON p.category_id = c.id
+        WHERE p.is_available = 1 AND c.slug = ?
+        ORDER BY p.name
+      `;
       params.push(category);
+    } else {
+      // No category = 2 per category for recommended
+      query = `
+        SELECT * FROM (
+          SELECT p.*, c.name as category_name, c.slug as category_slug,
+            ROW_NUMBER() OVER (PARTITION BY p.category_id ORDER BY p.name) as row_num
+          FROM products p
+          LEFT JOIN categories c ON p.category_id = c.id
+          WHERE p.is_available = 1
+        ) ranked
+        WHERE row_num <= 2
+        ORDER BY category_slug, name
+      `;
     }
 
-    query += ' ORDER BY p.name';
     const [products] = await pool.query(query, params);
     res.json(products);
   } catch (err) {
@@ -34,7 +48,7 @@ exports.getFeatured = async (req, res) => {
       FROM products p
       LEFT JOIN categories c ON p.category_id = c.id
       WHERE p.is_featured = 1 AND p.is_available = 1
-      LIMIT 5
+      LIMIT 6
     `);
     res.json(products);
   } catch (err) {
