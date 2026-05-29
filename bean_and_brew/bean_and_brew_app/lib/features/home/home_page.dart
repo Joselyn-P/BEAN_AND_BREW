@@ -7,6 +7,7 @@ import '../../core/services/storage_service.dart';
 import '../../core/services/weather_service.dart';
 
 import 'widgets/weather_banner.dart';
+import '../menu/menu_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -679,7 +680,15 @@ class _HomePageState extends State<HomePage> {
         ),
         child: BottomNavigationBar(
           currentIndex: _currentNavIndex,
-          onTap: (index) => setState(() => _currentNavIndex = index),
+          onTap: (index) {
+            if (index == 1) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const MenuPage()),
+              );
+            }
+            setState(() => _currentNavIndex = index);
+          },
           selectedItemColor: const Color(0xFFB87333),
           unselectedItemColor: const Color(0xFF7A6652),
           backgroundColor: Colors.white,

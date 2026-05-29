@@ -7,8 +7,17 @@ exports.getAllProducts = async (req, res) => {
     let query;
     const params = [];
 
-    if (category) {
-      // If category specified, return all in that category
+    if (!category || category === 'all') {
+      // Return ALL products
+      query = `
+        SELECT p.*, c.name as category_name, c.slug as category_slug
+        FROM products p
+        LEFT JOIN categories c ON p.category_id = c.id
+        WHERE p.is_available = 1
+        ORDER BY c.display_order, p.name
+      `;
+    } else {
+      // Return products in specific category
       query = `
         SELECT p.*, c.name as category_name, c.slug as category_slug
         FROM products p
@@ -17,19 +26,6 @@ exports.getAllProducts = async (req, res) => {
         ORDER BY p.name
       `;
       params.push(category);
-    } else {
-      // No category = 2 per category for recommended
-      query = `
-        SELECT * FROM (
-          SELECT p.*, c.name as category_name, c.slug as category_slug,
-            ROW_NUMBER() OVER (PARTITION BY p.category_id ORDER BY p.name) as row_num
-          FROM products p
-          LEFT JOIN categories c ON p.category_id = c.id
-          WHERE p.is_available = 1
-        ) ranked
-        WHERE row_num <= 2
-        ORDER BY category_slug, name
-      `;
     }
 
     const [products] = await pool.query(query, params);
