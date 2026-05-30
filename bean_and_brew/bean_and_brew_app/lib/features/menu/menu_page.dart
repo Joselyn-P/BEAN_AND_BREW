@@ -117,188 +117,267 @@ class _MenuPageState extends State<MenuPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F0E8),
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ── Header ──────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Bean & Brew',
-                    style: GoogleFonts.playfairDisplay(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFF2C1A0E),
+      body: Stack(
+        children: [
+          SafeArea(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // ── Header ──────────────────────────────────
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                  child: Row(
+                    children: [
+                      // Profile pic
+                      Container(
+                        width: 42,
+                        height: 42,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: const Color(0xFFE0D5C5),
+                          border: Border.all(
+                            color: const Color(0xFFD5C9B8),
+                            width: 2,
+                          ),
+                        ),
+                        child: const Icon(
+                          Icons.person,
+                          color: Color(0xFF7A6652),
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      // Bean & Brew
+                      Expanded(
+                        child: Text(
+                          'Bean & Brew',
+                          style: GoogleFonts.playfairDisplay(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: const Color(0xFF2C1A0E),
+                          ),
+                        ),
+                      ),
+                      const Icon(
+                        Icons.location_on,
+                        color: Color(0xFF2C1A0E),
+                        size: 22,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // ── Search Bar ───────────────────────────────
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: TextField(
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                      hintText: 'Search your coffee...',
+                      hintStyle: GoogleFonts.lato(
+                        color: const Color(0xFFB0A090),
+                        fontSize: 14,
+                      ),
+                      prefixIcon: const Icon(
+                        Icons.search,
+                        color: Color(0xFFB0A090),
+                      ),
+                      suffixIcon: _searchController.text.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.close,
+                                  color: Color(0xFFB0A090)),
+                              onPressed: () {
+                                _searchController.clear();
+                                _onSearchChanged();
+                              },
+                            )
+                          : null,
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30),
+                        borderSide: BorderSide.none,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30),
+                        borderSide: BorderSide.none,
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30),
+                        borderSide: const BorderSide(
+                          color: Color(0xFF2C1A0E),
+                          width: 1.5,
+                        ),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 14,
+                      ),
                     ),
                   ),
+                ),
+                const SizedBox(height: 16),
+
+                // ── Category Tabs ────────────────────────────
+                SizedBox(
+                  height: 38,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    itemCount: _categories.length,
+                    itemBuilder: (context, index) {
+                      final selected = _selectedCategory == index - 1;
+                      return GestureDetector(
+                        onTap: () {
+                          setState(() => _selectedCategory = index - 1);
+                          _loadByCategory(_categorySlugs[index]);
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.only(right: 10),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: selected
+                                ? const Color(0xFF2C1A0E)
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: selected
+                                  ? const Color(0xFF2C1A0E)
+                                  : const Color(0xFFD5C9B8),
+                            ),
+                          ),
+                          child: Text(
+                            _categories[index],
+                            style: GoogleFonts.lato(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: selected
+                                  ? Colors.white
+                                  : const Color(0xFF7A6652),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // ── Product Grid ─────────────────────────────
+                Expanded(
+                  child: _isLoading
+                      ? const Center(
+                          child: CircularProgressIndicator(
+                            color: Color(0xFF2C1A0E),
+                          ),
+                        )
+                      : _filteredProducts.isEmpty
+                          ? Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(
+                                    Icons.coffee_outlined,
+                                    size: 60,
+                                    color: Color(0xFFD5C9B8),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    'No products found',
+                                    style: GoogleFonts.playfairDisplay(
+                                      fontSize: 18,
+                                      color: const Color(0xFF7A6652),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Try a different search or category',
+                                    style: GoogleFonts.lato(
+                                      fontSize: 13,
+                                      color: const Color(0xFFB0A090),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : GridView.builder(
+                              padding:
+                                  const EdgeInsets.fromLTRB(20, 0, 20, 100),
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                crossAxisSpacing: 14,
+                                mainAxisSpacing: 14,
+                                childAspectRatio: 0.78,
+                              ),
+                              itemCount: _filteredProducts.length,
+                              itemBuilder: (context, index) {
+                                final item = _filteredProducts[index];
+                                return _ProductCard(product: item);
+                              },
+                            ),
+                ),
+              ],
+            ),
+          ),
+
+          // ── Floating Cart Button ─────────────────────────
+          Positioned(
+            bottom: 16,
+            right: 20,
+            child: Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                color: const Color(0xFF2C1A0E),
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.2),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
                   const Icon(
-                    Icons.location_on,
-                    color: Color(0xFF2C1A0E),
-                    size: 22,
+                    Icons.shopping_bag_outlined,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Container(
+                      width: 16,
+                      height: 16,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFB87333),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Center(
+                        child: Text(
+                          '0',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 16),
-
-            // ── Search Bar ───────────────────────────────
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: TextField(
-                controller: _searchController,
-                decoration: InputDecoration(
-                  hintText: 'Search your coffee...',
-                  hintStyle: GoogleFonts.lato(
-                    color: const Color(0xFFB0A090),
-                    fontSize: 14,
-                  ),
-                  prefixIcon: const Icon(
-                    Icons.search,
-                    color: Color(0xFFB0A090),
-                  ),
-                  suffixIcon: _searchController.text.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(Icons.close,
-                              color: Color(0xFFB0A090)),
-                          onPressed: () {
-                            _searchController.clear();
-                            _onSearchChanged();
-                          },
-                        )
-                      : null,
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(30),
-                    borderSide: BorderSide.none,
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(30),
-                    borderSide: BorderSide.none,
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(30),
-                    borderSide: const BorderSide(
-                      color: Color(0xFF2C1A0E),
-                      width: 1.5,
-                    ),
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 14,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // ── Category Tabs ────────────────────────────
-            SizedBox(
-              height: 38,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                itemCount: _categories.length,
-                itemBuilder: (context, index) {
-                  final selected = _selectedCategory == index - 1;
-                  return GestureDetector(
-                    onTap: () {
-                      setState(() => _selectedCategory = index - 1);
-                      _loadByCategory(_categorySlugs[index]);
-                    },
-                    child: Container(
-                      margin: const EdgeInsets.only(right: 10),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: selected
-                            ? const Color(0xFF2C1A0E)
-                            : Colors.transparent,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: selected
-                              ? const Color(0xFF2C1A0E)
-                              : const Color(0xFFD5C9B8),
-                        ),
-                      ),
-                      child: Text(
-                        _categories[index],
-                        style: GoogleFonts.lato(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: selected
-                              ? Colors.white
-                              : const Color(0xFF7A6652),
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // ── Product Grid ─────────────────────────────
-            Expanded(
-              child: _isLoading
-                  ? const Center(
-                      child: CircularProgressIndicator(
-                        color: Color(0xFF2C1A0E),
-                      ),
-                    )
-                  : _filteredProducts.isEmpty
-                      ? Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(
-                                Icons.coffee_outlined,
-                                size: 60,
-                                color: Color(0xFFD5C9B8),
-                              ),
-                              const SizedBox(height: 12),
-                              Text(
-                                'No products found',
-                                style: GoogleFonts.playfairDisplay(
-                                  fontSize: 18,
-                                  color: const Color(0xFF7A6652),
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Try a different search or category',
-                                style: GoogleFonts.lato(
-                                  fontSize: 13,
-                                  color: const Color(0xFFB0A090),
-                                ),
-                              ),
-                            ],
-                          ),
-                        )
-                      : GridView.builder(
-                          padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            crossAxisSpacing: 14,
-                            mainAxisSpacing: 14,
-                            childAspectRatio: 0.78,
-                          ),
-                          itemCount: _filteredProducts.length,
-                          itemBuilder: (context, index) {
-                            final item = _filteredProducts[index];
-                            return _ProductCard(product: item);
-                          },
-                        ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
 
       // ── Bottom Navigation ────────────────────────────
@@ -307,7 +386,7 @@ class _MenuPageState extends State<MenuPage> {
           color: Colors.white,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
+              color: Colors.black.withValues(alpha: 0.08),
               blurRadius: 12,
               offset: const Offset(0, -4),
             ),
@@ -367,21 +446,6 @@ class _ProductCard extends StatelessWidget {
     ).toStringAsFixed(2);
 
     final tempType = product['temperature_type'] ?? 'both';
-    final tagColor = tempType == 'hot'
-        ? const Color(0xFFFFECE0)
-        : tempType == 'cold'
-            ? const Color(0xFFE0F0FF)
-            : const Color(0xFFE8F5E9);
-    final tagTextColor = tempType == 'hot'
-        ? const Color(0xFFD4703A)
-        : tempType == 'cold'
-            ? const Color(0xFF2979B8)
-            : const Color(0xFF2E7D52);
-    final tagLabel = tempType == 'hot'
-        ? 'HOT'
-        : tempType == 'cold'
-            ? 'COLD'
-            : 'HOT & COLD';
 
     return GestureDetector(
       onTap: () {
@@ -393,7 +457,7 @@ class _ProductCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.06),
+              color: Colors.black.withValues(alpha: 0.06),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -403,54 +467,27 @@ class _ProductCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Image
-            Stack(
-              children: [
-                ClipRRect(
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(16),
-                  ),
-                  child: Image.network(
-                    product['image_url'] ?? '',
-                    height: 140,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(
-                      height: 140,
-                      color: const Color(0xFFF0E8D8),
-                      child: const Center(
-                        child: Icon(
-                          Icons.coffee,
-                          size: 40,
-                          color: Color(0xFF7A6652),
-                        ),
-                      ),
+            ClipRRect(
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(16),
+              ),
+              child: Image.network(
+                product['image_url'] ?? '',
+                height: 140,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Container(
+                  height: 140,
+                  color: const Color(0xFFF0E8D8),
+                  child: const Center(
+                    child: Icon(
+                      Icons.coffee,
+                      size: 40,
+                      color: Color(0xFF7A6652),
                     ),
                   ),
                 ),
-                // Temperature tag
-                Positioned(
-                  top: 8,
-                  left: 8,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 3,
-                    ),
-                    decoration: BoxDecoration(
-                      color: tagColor,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      tagLabel,
-                      style: GoogleFonts.lato(
-                        fontSize: 9,
-                        fontWeight: FontWeight.w700,
-                        color: tagTextColor,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
 
             // Details

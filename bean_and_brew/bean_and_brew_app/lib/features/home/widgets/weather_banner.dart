@@ -34,8 +34,13 @@ class WeatherBanner extends StatelessWidget {
         return Icons.wb_sunny;
       case 'Clouds':
         return Icons.cloud;
+      case 'Haze':
+      case 'Mist':
+      case 'Fog':
+      case 'Smoke':
+        return Icons.blur_on;
       default:
-        return Icons.coffee;
+        return Icons.wb_cloudy;
     }
   }
 
@@ -53,6 +58,11 @@ class WeatherBanner extends StatelessWidget {
         return "It's a sunny day!";
       case 'Clouds':
         return "Cloudy skies today";
+      case 'Haze':
+      case 'Mist':
+      case 'Fog':
+      case 'Smoke':
+        return "Hazy day outside";
       default:
         return "Today's Pick for you";
     }

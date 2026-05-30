@@ -7,19 +7,23 @@ import '../constants/api_constants.dart';
 class WeatherService {
   Future<Map<String, dynamic>> getWeatherRecommendation() async {
     try {
-      // Get location from browser
+      print('🌤 Getting browser location...');
       final position =
           await html.window.navigator.geolocation.getCurrentPosition();
       final lat = position.coords!.latitude!.toDouble();
       final lon = position.coords!.longitude!.toDouble();
+      print('📍 Location: lat=$lat, lon=$lon');
 
-      // Call YOUR backend (which calls OpenWeather using the .env key)
-      final response = await http.get(
-        Uri.parse('${ApiConstants.weather}?lat=$lat&lon=$lon'),
-      );
+      final url = '${ApiConstants.weather}?lat=$lat&lon=$lon';
+      print('🌐 Calling: $url');
+
+      final response = await http.get(Uri.parse(url));
+      print('📡 Status: ${response.statusCode}');
+      print('📦 Body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
+        print('✅ Weather loaded: ${data['condition']}, ${data['city']}');
         return {
           'condition': data['condition'],
           'temp': data['temp'],
@@ -27,12 +31,14 @@ class WeatherService {
           'recommendationType': data['recommendationType'],
           'bannerText': _getBannerText(data['condition']),
           'bannerColor': _getBannerColor(data['condition']),
-          'products': data['products'], // recommended products from DB
+          'products': data['products'],
         };
       } else {
+        print('❌ Bad status: ${response.statusCode}');
         return _fallback();
       }
     } catch (e) {
+      print('💥 Error: $e');
       return _fallback();
     }
   }
@@ -43,7 +49,7 @@ class WeatherService {
       'temp': 28,
       'city': 'Your City',
       'recommendationType': 'cold',
-      'bannerText': "It's a sunny day! ☀️",
+      'bannerText': "It's a sunny day!",
       'bannerColor': 'orange',
       'products': [],
     };
@@ -53,17 +59,22 @@ class WeatherService {
     switch (weatherMain) {
       case 'Rain':
       case 'Drizzle':
-        return "It's rainy! ☔ Warm up with a hot drink";
+        return "It's rainy! Warm up with a hot drink";
       case 'Thunderstorm':
-        return "Stormy outside! ⛈️ Stay cozy";
+        return "Stormy outside! Stay cozy";
       case 'Snow':
-        return "It's snowing! ❄️ Perfect for something hot";
+        return "It's snowing! Perfect for something hot";
       case 'Clear':
-        return "It's a sunny day! ☀️";
+        return "It's a sunny day!";
       case 'Clouds':
-        return "Cloudy skies today ☁️";
+        return "Cloudy skies today";
+      case 'Haze':
+      case 'Mist':
+      case 'Fog':
+      case 'Smoke':
+        return "Hazy day outside";
       default:
-        return "Today's Pick for you ☕";
+        return "Today's Pick for you";
     }
   }
 
@@ -77,8 +88,12 @@ class WeatherService {
         return 'lightblue';
       case 'Clear':
         return 'orange';
-      default:
+      case 'Haze':
+      case 'Mist':
+      case 'Fog':
         return 'grey';
+      default:
+        return 'orange';
     }
   }
 }

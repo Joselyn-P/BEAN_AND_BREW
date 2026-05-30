@@ -40,8 +40,12 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _loadUser();
-    _loadWeather();
-    _loadProducts();
+    _initData(); // single entry point
+  }
+
+  Future<void> _initData() async {
+    await _loadWeather(); // wait for weather first
+    await _loadProducts(); // then load featured + fallback recommended
   }
 
   Future<void> _loadUser() async {
@@ -685,9 +689,13 @@ class _HomePageState extends State<HomePage> {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const MenuPage()),
-              );
+              ).then((_) {
+                // Reset to home when coming back
+                setState(() => _currentNavIndex = 0);
+              });
+            } else {
+              setState(() => _currentNavIndex = index);
             }
-            setState(() => _currentNavIndex = index);
           },
           selectedItemColor: const Color(0xFFB87333),
           unselectedItemColor: const Color(0xFF7A6652),
