@@ -5,6 +5,8 @@ import 'package:http/http.dart' as http;
 import '../../core/constants/api_constants.dart';
 import '../../core/services/storage_service.dart';
 
+import 'product_page.dart';
+
 class MenuPage extends StatefulWidget {
   const MenuPage({super.key});
 
@@ -306,7 +308,7 @@ class _MenuPageState extends State<MenuPage> {
                             )
                           : GridView.builder(
                               padding:
-                                  const EdgeInsets.fromLTRB(20, 0, 20, 100),
+                                  const EdgeInsets.fromLTRB(20, 0, 20, 25),
                               gridDelegate:
                                   const SliverGridDelegateWithFixedCrossAxisCount(
                                 crossAxisCount: 2,
@@ -445,11 +447,14 @@ class _ProductCard extends StatelessWidget {
       (product['base_price'] ?? '0').toString(),
     ).toStringAsFixed(2);
 
-    final tempType = product['temperature_type'] ?? 'both';
-
     return GestureDetector(
       onTap: () {
-        // TODO: navigate to product detail page
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ProductPage(product: product),
+          ),
+        );
       },
       child: Container(
         decoration: BoxDecoration(

@@ -20,8 +20,10 @@ exports.getRecommendations = async (req, res) => {
 
     // Get recommended products from DB
     const [products] = await pool.query(`
-      SELECT p.* FROM products p
-      WHERE p.temperature_type = ? OR p.temperature_type = 'both'
+      SELECT p.*, c.name as category_name, c.slug as category_slug
+      FROM products p
+      LEFT JOIN categories c ON p.category_id = c.id
+      WHERE (p.temperature_type = ? OR p.temperature_type = 'both')
       AND p.is_available = 1
       ORDER BY RAND()
       LIMIT 5

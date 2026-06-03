@@ -8,6 +8,7 @@ import '../../core/services/weather_service.dart';
 
 import 'widgets/weather_banner.dart';
 import '../menu/menu_page.dart';
+import '../menu/product_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -193,7 +194,7 @@ class _HomePageState extends State<HomePage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Welcome back',
+                                'Welcome back,',
                                 style: GoogleFonts.lato(
                                   fontSize: 12,
                                   color: Colors.grey[600],
@@ -263,7 +264,29 @@ class _HomePageState extends State<HomePage> {
                               ),
                             ),
                           )
-                        : WeatherBanner(weatherData: _weatherData!),
+                        : WeatherBanner(
+                          weatherData: _weatherData!,
+                          onOrderNow: () {
+                            final recommendedDrink = _weatherData!['recommendationType'] == 'hot'
+                                ? 'Honey Lavender Latte'
+                                : 'Iced Caramel Macchiato';
+
+                            // Find the matching product in recommended list
+                            final product = _recommended.firstWhere(
+                              (p) => p['name'] == recommendedDrink,
+                              orElse: () => _recommended.isNotEmpty ? _recommended.first : {},
+                            );
+
+                            if (product.isNotEmpty) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => ProductPage(product: product),
+                                ),
+                              );
+                            }
+                          },
+                        ),
                   ),
                   const SizedBox(height: 20),
 
@@ -387,79 +410,89 @@ class _HomePageState extends State<HomePage> {
                                 itemCount: _recommended.length,
                                 itemBuilder: (context, index) {
                                   final item = _recommended[index];
-                                  return Container(
-                                    width: 160,
-                                    margin: const EdgeInsets.only(right: 14),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(16),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color:
-                                              Colors.black.withOpacity(0.06),
-                                          blurRadius: 8,
-                                          offset: const Offset(0, 2),
+                                   return GestureDetector(
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => ProductPage(product: item),
                                         ),
-                                      ],
-                                    ),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        ClipRRect(
-                                          borderRadius:
-                                              const BorderRadius.vertical(
-                                            top: Radius.circular(16),
+                                      );
+                                    },
+                                    child: Container(
+                                      width: 160,
+                                      margin: const EdgeInsets.only(right: 14),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(16),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color:
+                                                Colors.black.withOpacity(0.06),
+                                            blurRadius: 8,
+                                            offset: const Offset(0, 2),
                                           ),
-                                          child: Image.network(
-                                            item['image_url'] ?? '',
-                                            height: 130,
-                                            width: double.infinity,
-                                            fit: BoxFit.cover,
-                                            errorBuilder: (_, __, ___) =>
-                                                Container(
+                                        ],
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          ClipRRect(
+                                            borderRadius:
+                                                const BorderRadius.vertical(
+                                              top: Radius.circular(16),
+                                            ),
+                                            child: Image.network(
+                                              item['image_url'] ?? '',
                                               height: 130,
-                                              color: const Color(0xFFF0E8D8),
-                                              child: const Icon(
-                                                Icons.coffee,
-                                                size: 40,
-                                                color: Color(0xFF7A6652),
+                                              width: double.infinity,
+                                              fit: BoxFit.cover,
+                                              errorBuilder: (_, __, ___) =>
+                                                  Container(
+                                                height: 130,
+                                                color: const Color(0xFFF0E8D8),
+                                                child: const Icon(
+                                                  Icons.coffee,
+                                                  size: 40,
+                                                  color: Color(0xFF7A6652),
+                                                ),
                                               ),
                                             ),
                                           ),
-                                        ),
-                                        Padding(
-                                          padding: const EdgeInsets.all(10),
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                item['name'] ?? '',
-                                                style: GoogleFonts.lato(
-                                                  fontSize: 13,
-                                                  fontWeight: FontWeight.w600,
-                                                  color:
-                                                      const Color(0xFF2C1A0E),
+                                          Padding(
+                                            padding: const EdgeInsets.all(10),
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  item['name'] ?? '',
+                                                  style: GoogleFonts.lato(
+                                                    fontSize: 13,
+                                                    fontWeight: FontWeight.w600,
+                                                    color:
+                                                        const Color(0xFF2C1A0E),
+                                                  ),
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
                                                 ),
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                              const SizedBox(height: 4),
-                                              Text(
-                                                '\$${double.parse(item['base_price'].toString()).toStringAsFixed(2)}',
-                                                style: GoogleFonts.lato(
-                                                  fontSize: 13,
-                                                  color:
-                                                      const Color(0xFF7A6652),
-                                                  fontWeight: FontWeight.w500,
+                                                const SizedBox(height: 4),
+                                                Text(
+                                                  '\$${double.parse(item['base_price'].toString()).toStringAsFixed(2)}',
+                                                  style: GoogleFonts.lato(
+                                                    fontSize: 13,
+                                                    color:
+                                                        const Color(0xFF7A6652),
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
                                                 ),
-                                              ),
-                                            ],
+                                              ],
+                                            ),
                                           ),
-                                        ),
-                                      ],
-                                    ),
+                                        ],
+                                      ),
+                                    )
                                   );
                                 },
                               ),

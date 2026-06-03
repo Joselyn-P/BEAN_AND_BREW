@@ -3,8 +3,13 @@ import 'package:google_fonts/google_fonts.dart';
 
 class WeatherBanner extends StatelessWidget {
   final Map<String, dynamic> weatherData;
+  final VoidCallback? onOrderNow;
 
-  const WeatherBanner({super.key, required this.weatherData});
+  const WeatherBanner({
+    super.key,
+    required this.weatherData,
+    this.onOrderNow,
+  });
 
   Color _getBannerBgColor() {
     final color = weatherData['bannerColor'] ?? 'orange';
@@ -125,7 +130,7 @@ class WeatherBanner extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 ElevatedButton(
-                  onPressed: () {},
+                  onPressed: onOrderNow,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF2C1A0E),
                     foregroundColor: Colors.white,
