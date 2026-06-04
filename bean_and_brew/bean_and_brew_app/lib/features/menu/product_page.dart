@@ -4,6 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import '../../core/constants/api_constants.dart';
 import '../../core/services/storage_service.dart';
+import 'package:provider/provider.dart';
+import '../../core/providers/cart_provider.dart';
 
 class ProductPage extends StatefulWidget {
   final Map<String, dynamic> product;
@@ -128,6 +130,7 @@ class _ProductPageState extends State<ProductPage> {
       );
 
       if (response.statusCode == 201) {
+        Provider.of<CartProvider>(context, listen: false).increment();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(

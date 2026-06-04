@@ -4,6 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'signup_page.dart';
 import '../home/home_page.dart';
+import 'package:provider/provider.dart';
+import '../../core/providers/cart_provider.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -50,6 +52,14 @@ class _LoginPageState extends State<LoginPage> {
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(result['message'] ?? 'Login failed')),
+      );
+    }
+
+    if (result['success']) {
+      await Provider.of<CartProvider>(context, listen: false).loadCart();
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const HomePage()),
       );
     }
   }

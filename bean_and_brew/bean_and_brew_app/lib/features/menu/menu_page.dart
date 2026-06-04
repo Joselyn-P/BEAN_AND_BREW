@@ -4,8 +4,11 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import '../../core/constants/api_constants.dart';
 import '../../core/services/storage_service.dart';
+import 'package:provider/provider.dart';
+import '../../core/providers/cart_provider.dart';
 
 import 'product_page.dart';
+import '../cart/cart_page.dart';
 
 class MenuPage extends StatefulWidget {
   const MenuPage({super.key});
@@ -117,6 +120,8 @@ class _MenuPageState extends State<MenuPage> {
 
   @override
   Widget build(BuildContext context) {
+    final cartCount = context.watch<CartProvider>().itemCount;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F0E8),
       body: Stack(
@@ -329,56 +334,67 @@ class _MenuPageState extends State<MenuPage> {
 
           // ── Floating Cart Button ─────────────────────────
           Positioned(
-            bottom: 16,
-            right: 20,
-            child: Container(
-              width: 52,
-              height: 52,
-              decoration: BoxDecoration(
-                color: const Color(0xFF2C1A0E),
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.2),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  const Icon(
-                    Icons.shopping_bag_outlined,
-                    color: Colors.white,
-                    size: 24,
-                  ),
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: Container(
-                      width: 16,
-                      height: 16,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFB87333),
-                        shape: BoxShape.circle,
+              bottom: 16,
+              right: 20,
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const CartPage()),
+                  ).then((_) {
+                    Provider.of<CartProvider>(context, listen: false).loadCart();
+                  });
+                },
+
+                child: Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2C1A0E),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
                       ),
-                      child: const Center(
-                        child: Text(
-                          '0',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
+                    ],
+                  ),
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      const Icon(
+                        Icons.shopping_bag_outlined,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                      Positioned(
+                        top: 8,
+                        right: 8,
+                        child: Container(
+                          width: 16,
+                          height: 16,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFFB87333),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Center(
+                            child: Text(
+                              '$cartCount',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
                         ),
                       ),
-                    ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
-          ),
         ],
       ),
 
@@ -443,6 +459,8 @@ class _ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+    
     final price = double.parse(
       (product['base_price'] ?? '0').toString(),
     ).toStringAsFixed(2);

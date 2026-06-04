@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../core/services/auth_service.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import '../../core/providers/cart_provider.dart';
+
+import '../home/home_page.dart';
 
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
@@ -56,13 +60,22 @@ class _SignupPageState extends State<SignupPage> {
     setState(() => _isLoading = false);
 
     if (result['success']) {
-      // TODO: navigate to home page
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Welcome, ${result['user']['full_name']}!')),
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const HomePage()),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(result['message'] ?? 'Registration failed')),
+      );
+    }
+
+    if (result['success']) {
+      // Load cart count before navigating
+      await Provider.of<CartProvider>(context, listen: false).loadCart();
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const HomePage()),
       );
     }
   }
