@@ -5,6 +5,8 @@ import 'package:http/http.dart' as http;
 import '../../core/constants/api_constants.dart';
 import '../../core/services/storage_service.dart';
 
+import '../checkout/checkout_page.dart';
+
 class CartPage extends StatefulWidget {
   const CartPage({super.key});
 
@@ -277,7 +279,18 @@ class _CartPageState extends State<CartPage> {
                 ),
                 child: ElevatedButton(
                   onPressed: () {
-                    // TODO: navigate to checkout page
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => CheckoutPage(
+                          items: _items,
+                          subtotal: _subtotal,
+                          tax: _tax,
+                          discount: _discount,
+                          promoCodeId: _appliedPromo?['id'],
+                        ),
+                      ),
+                    ).then((_) => _loadCart()); // reload cart when coming back
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF2C1A0E),
@@ -360,7 +373,7 @@ class _CartPageState extends State<CartPage> {
                   children: [
                     Expanded(
                       child: Text(
-                        item['name'] ?? '',
+                        item['product_name'] ?? item['name'] ?? '',
                         style: GoogleFonts.lato(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,

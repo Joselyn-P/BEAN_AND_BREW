@@ -130,7 +130,12 @@ class _ProductPageState extends State<ProductPage> {
       );
 
       if (response.statusCode == 201) {
-        Provider.of<CartProvider>(context, listen: false).increment();
+        Provider.of<CartProvider>(context, listen: false).loadCart();
+          // OR for instant local bump by quantity:
+          for (int i = 0; i < _quantity; i++) {
+            Provider.of<CartProvider>(context, listen: false).increment();
+          }
+          
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
