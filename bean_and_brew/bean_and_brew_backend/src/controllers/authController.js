@@ -1,6 +1,7 @@
 const pool = require('../config/db');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { OAuth2Client } = require('google-auth-library');
 
 // REGISTER
 exports.register = async (req, res) => {
@@ -88,5 +89,89 @@ exports.login = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });
+  }
+};
+
+exports.googleLogin = async (req, res) => {
+  const { access_token } = req.body;
+
+  if (!access_token) {
+    return res.status(400).json({
+      message: 'No access token provided',
+    });
+  }
+
+  try {
+    const googleResponse = await fetch(
+      'https://www.googleapis.com/oauth2/v3/userinfo',
+      {
+        headers: {
+          Authorization: `Bearer ${access_token}`,
+        },
+      }
+    );
+
+    const payload = await googleResponse.json();
+
+    const googleId = payload.sub;
+    const email = payload.email;
+    const fullName = payload.name;
+    const profilePhoto = payload.picture;
+
+    const [existing] = await pool.query(
+      'SELECT * FROM users WHERE email = ? OR google_id = ?',
+      [email, googleId]
+    );
+
+    let user;
+
+    if (existing.length > 0) {
+      user = existing[0];
+
+      if (!user.google_id) {
+        await pool.query(
+          'UPDATE users SET google_id = ?, profile_photo_url = ?, auth_provider = ? WHERE id = ?',
+          [googleId, profilePhoto, 'google', user.id]
+        );
+      }
+    } else {
+      await pool.query(
+        `INSERT INTO users
+        (id, google_id, full_name, email, profile_photo_url, auth_provider)
+        VALUES (UUID(), ?, ?, ?, ?, 'google')`,
+        [googleId, fullName, email, profilePhoto]
+      );
+
+      const [newUser] = await pool.query(
+        'SELECT * FROM users WHERE email = ?',
+        [email]
+      );
+
+      user = newUser[0];
+    }
+
+    const token = jwt.sign(
+      {
+        id: user.id,
+        email: user.email,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    res.json({
+      token,
+      user: {
+        id: user.id,
+        full_name: user.full_name,
+        email: user.email,
+        profile_photo_url: user.profile_photo_url,
+      },
+    });
+  } catch (err) {
+    console.error('Google auth error:', err);
+    res.status(401).json({
+      message: 'Google authentication failed',
+    });
   }
 };

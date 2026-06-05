@@ -4,8 +4,11 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import '../../core/constants/api_constants.dart';
 import '../../core/services/storage_service.dart';
+
 import 'order_tracking_page.dart';
 import 'order_detail_page.dart';
+import '../menu/menu_page.dart';
+import '../profile/profile_page.dart';
 
 class OrdersPage extends StatefulWidget {
   const OrdersPage({super.key});
@@ -240,7 +243,20 @@ class _OrdersPageState extends State<OrdersPage> {
         child: BottomNavigationBar(
           currentIndex: 2,
           onTap: (index) {
-            if (index != 2) Navigator.pop(context);
+            if (index == 0) {
+              Navigator.popUntil(context, (route) => route.isFirst); // back to Home
+            } else if (index == 1) {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => const MenuPage()),
+              );
+            } else if (index == 3) {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => const ProfilePage()),
+              );
+            }
+            // index == 2 is current page, do nothing
           },
           selectedItemColor: const Color(0xFFB87333),
           unselectedItemColor: const Color(0xFF7A6652),

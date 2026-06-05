@@ -7,6 +7,9 @@ import '../../core/services/storage_service.dart';
 import '../../core/services/auth_service.dart';
 import '../auth/login_page.dart';
 
+import '../menu/menu_page.dart';
+import '../orders/orders_page.dart';
+
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
 
@@ -498,7 +501,20 @@ class _ProfilePageState extends State<ProfilePage> {
         child: BottomNavigationBar(
           currentIndex: 3,
           onTap: (index) {
-            if (index != 3) Navigator.pop(context);
+            if (index == 0) {
+              Navigator.popUntil(context, (route) => route.isFirst);
+            } else if (index == 1) {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => const MenuPage()),
+              );
+            } else if (index == 2) {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => const OrdersPage()),
+              );
+            }
+            // index == 3 is current page, do nothing
           },
           selectedItemColor: const Color(0xFFB87333),
           unselectedItemColor: const Color(0xFF7A6652),

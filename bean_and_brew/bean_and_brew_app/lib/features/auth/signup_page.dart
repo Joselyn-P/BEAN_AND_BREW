@@ -80,8 +80,33 @@ class _SignupPageState extends State<SignupPage> {
     }
   }
 
-  void _signUpWithGoogle() {
-    // TODO: connect to Google OAuth
+  void _signUpWithGoogle() async {
+    setState(() => _isLoading = true);
+
+    final result = await AuthService.loginWithGoogle();
+
+    setState(() => _isLoading = false);
+
+    if (result['success']) {
+      await Provider.of<CartProvider>(context, listen: false).loadCart();
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const HomePage()),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            result['message'] ?? 'Google sign in failed',
+            style: GoogleFonts.lato(),
+          ),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10)),
+        ),
+      );
+    }
   }
 
   @override

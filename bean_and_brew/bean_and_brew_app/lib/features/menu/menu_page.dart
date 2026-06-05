@@ -9,6 +9,8 @@ import '../../core/providers/cart_provider.dart';
 
 import 'product_page.dart';
 import '../cart/cart_page.dart';
+import '../orders/orders_page.dart';
+import '../profile/profile_page.dart';
 
 class MenuPage extends StatefulWidget {
   const MenuPage({super.key});
@@ -404,7 +406,7 @@ class _MenuPageState extends State<MenuPage> {
           color: Colors.white,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.08),
+              color: Colors.black.withOpacity(0.08),
               blurRadius: 12,
               offset: const Offset(0, -4),
             ),
@@ -413,14 +415,26 @@ class _MenuPageState extends State<MenuPage> {
         child: BottomNavigationBar(
           currentIndex: 1,
           onTap: (index) {
-            if (index == 0) Navigator.pop(context);
+            if (index == 0) {
+              Navigator.pop(context); // back to Home
+            } else if (index == 2) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const OrdersPage()),
+              );
+            } else if (index == 3) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ProfilePage()),
+              );
+            }
+            // index == 1 is current page, do nothing
           },
           selectedItemColor: const Color(0xFFB87333),
           unselectedItemColor: const Color(0xFF7A6652),
           backgroundColor: Colors.white,
           type: BottomNavigationBarType.fixed,
-          selectedLabelStyle:
-              GoogleFonts.lato(fontWeight: FontWeight.w600),
+          selectedLabelStyle: GoogleFonts.lato(fontWeight: FontWeight.w600),
           unselectedLabelStyle: GoogleFonts.lato(),
           elevation: 0,
           items: const [

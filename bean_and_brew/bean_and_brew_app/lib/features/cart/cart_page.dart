@@ -21,7 +21,6 @@ class _CartPageState extends State<CartPage> {
   double _tax = 0;
   double _total = 0;
   int _itemCount = 0;
-  String? _cartId;
 
   final _promoController = TextEditingController();
   bool _applyingPromo = false;
@@ -54,7 +53,6 @@ class _CartPageState extends State<CartPage> {
       if (res.statusCode == 200) {
         final data = json.decode(res.body);
         setState(() {
-          _cartId = data['cart_id'];
           _items = List<Map<String, dynamic>>.from(data['items']);
           _subtotal = double.parse(data['subtotal'].toString());
           _tax = double.parse(data['tax'].toString());

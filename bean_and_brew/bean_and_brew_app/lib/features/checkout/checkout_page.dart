@@ -420,7 +420,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
                     ),
                     child: Column(
                       children: _paymentMethods.map((method) {
-                        final selected = _paymentMethod == method['id'];
                         final isLast = method == _paymentMethods.last;
                         return Column(
                           children: [
