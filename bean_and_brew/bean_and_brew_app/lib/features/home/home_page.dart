@@ -12,6 +12,9 @@ import 'widgets/weather_banner.dart';
 import '../menu/menu_page.dart';
 import '../menu/product_page.dart';
 import '../cart/cart_page.dart';
+import '../orders/orders_page.dart';
+import '../profile/profile_page.dart';
+
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -743,10 +746,17 @@ class _HomePageState extends State<HomePage> {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const MenuPage()),
-              ).then((_) {
-                // Reset to home when coming back
-                setState(() => _currentNavIndex = 0);
-              });
+              ).then((_) => setState(() => _currentNavIndex = 0));
+            } else if (index == 2) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const OrdersPage()),
+              ).then((_) => setState(() => _currentNavIndex = 0));
+            } else if (index == 3) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ProfilePage()),
+              ).then((_) => setState(() => _currentNavIndex = 0));
             } else {
               setState(() => _currentNavIndex = index);
             }

@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../../core/constants/api_constants.dart';
 import '../../core/services/storage_service.dart';
 import '../../core/providers/cart_provider.dart';
+import '../orders/order_tracking_page.dart';
 
 class CheckoutPage extends StatefulWidget {
   final List<Map<String, dynamic>> items;
@@ -392,14 +393,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
                                       ),
                                     ),
                                   ],
-                                ),
-                              ),
-                              Text(
-                                'Change',
-                                style: GoogleFonts.lato(
-                                  fontSize: 13,
-                                  color: const Color(0xFFB87333),
-                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ],
@@ -793,7 +786,12 @@ class OrderConfirmedPage extends StatelessWidget {
               const SizedBox(height: 12),
               OutlinedButton(
                 onPressed: () {
-                  // TODO: navigate to order tracking
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => OrderTrackingPage(orderId: orderId),
+                    ),
+                  );
                 },
                 style: OutlinedButton.styleFrom(
                   side: const BorderSide(color: Color(0xFF2C1A0E)),
